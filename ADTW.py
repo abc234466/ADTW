@@ -7,6 +7,9 @@ import math  # including inf
 import time
 import numbers
 
+
+from heapq import * # include heap queue data structure
+
 # for function sorted key
 from operator import itemgetter, attrgetter
 
@@ -62,8 +65,8 @@ ComparedTS = [9, -0.81704, -0.7331, -0.62782, -0.49572, -0.33489, -0.14328, 0.07
               -0.95905, -0.96174, -0.96086]
 
 # short data
-TS = [9, -79,-76,-73,-69,-6,-63,-61]
-ComparedTS = [18, -87,-84,-82,-81,-79,-76,-74]
+#TS = [9, -79,-76,-73,-69,-6,-63,-61]
+#ComparedTS = [18, -87,-84,-82,-81,-79,-76,-74]
 
 
 # Trim the label of the time series
@@ -135,17 +138,16 @@ def adaptiveWindowDTW(ts1, ts2):
             return matrix_ADTW[ts1_length - 1][ts2_length - 1]
         else:
 
-            comparedIncreasingQueue.pop(0)
-            # right direction
+            # diagonal direction
             if ts1_index + 1 < ts1_length and ts2_index + 1 < ts2_length:
                 distance_dia = abs(ts1[ts1_index + 1] - ts2[ts2_index + 1])
 
                 cumulativeDia = matrix_ADTW[ts1_index][ts2_index] + distance_dia
                 if cumulativeDia < matrix_ADTW[ts1_index + 1][ts2_index + 1]:
                     matrix_ADTW[ts1_index + 1][ts2_index + 1] = cumulativeDia
-                    insertList = [cumulativeDia, ts1_index, ts2_index]
+                    insertList = [cumulativeDia, ts1_index + 1, ts2_index + 1]
                     if insertList not in comparedIncreasingQueue:
-                        comparedIncreasingQueue.insert(0, insertList)
+                        heappush(comparedIncreasingQueue, insertList)
 
             # down direction
             if ts1_index + 1 < ts1_length:
@@ -154,9 +156,9 @@ def adaptiveWindowDTW(ts1, ts2):
                 cumulativeDown = matrix_ADTW[ts1_index][ts2_index] + distance_down
                 if cumulativeDown < matrix_ADTW[ts1_index + 1][ts2_index]:
                     matrix_ADTW[ts1_index + 1][ts2_index] = cumulativeDown
-                    insertList = [cumulativeDown, ts1_index, ts2_index]
+                    insertList = [cumulativeDown, ts1_index + 1, ts2_index]
                     if insertList not in comparedIncreasingQueue:
-                        comparedIncreasingQueue.insert(0, insertList)
+                        heappush(comparedIncreasingQueue, insertList)
 
             #right direction
             if ts2_index + 1 < ts2_length:
@@ -166,18 +168,19 @@ def adaptiveWindowDTW(ts1, ts2):
                 if cumulativeRight < matrix_ADTW[ts1_index][ts2_index + 1]:
                     matrix_ADTW[ts1_index][ts2_index + 1] = cumulativeRight
 
-                    insertList = [cumulativeRight, ts1_index, ts2_index]
+                    insertList = [cumulativeRight, ts1_index, ts2_index + 1]
                     if insertList not in comparedIncreasingQueue:
-                        comparedIncreasingQueue.insert(0, insertList)
+                        heappush(comparedIncreasingQueue, insertList)
 
             distance_minimum = min(distance_dia, distance_down, distance_right)
 
             current_minimum_distance = current_minimum_distance + distance_minimum
             # sort the queue
-            sorted(comparedIncreasingQueue, key=itemgetter(0))
-            print(comparedIncreasingQueue)
-            ts1_index = comparedIncreasingQueue[0][1]
-            ts2_index = comparedIncreasingQueue[0][2]
+            #comparedIncreasingQueue = sorted(comparedIncreasingQueue, key=itemgetter(0))
+            minimum_cell = heappop(comparedIncreasingQueue)
+            #print(comparedIncreasingQueue)
+            ts1_index = minimum_cell[1]
+            ts2_index = minimum_cell[2]
 
             # the first step
 
@@ -198,6 +201,6 @@ def quicksort(queue):
     return quicksort([i for i in queue if i < midcell]) + [midcell] + quicksort([i for i in queue if i > midcell])
 
 
-#
+start_time = time.time()
 print(adaptiveWindowDTW(Trim_TS, Trim_ComparedTS))
-# print(time.time() - start_time)
+print(time.time() - start_time)
