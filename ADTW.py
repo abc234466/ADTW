@@ -194,7 +194,11 @@ def updateQueue(queue, inputValue, ts1_index, ts2_index):
         #                 queue.insert(i+1, [inputValue, [ts1_index,ts2_index]])
         #         return queue
 
-
+def quicksort(queue):
+    if len(queue)<=1:
+        return queue
+    midcell = queue[len(queue)//2]
+    return quicksort([ i for i in queue if i < midcell]) + [midcell] + quicksort([ i for i in queue if i > midcell])
 #
 print(adaptiveWindowDTW(Trim_TS, Trim_ComparedTS))
 # print(time.time() - start_time)
