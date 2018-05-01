@@ -249,6 +249,9 @@ with open(test_data_dir) as test_data, open(train_data_dir) as train_data:
     adtwpoint = 0
     dtwpoint = 0
 
+    # set up a current minimum distance to infinity
+    current_coparision_distance = math.inf
+
     while True:
 
         '''
@@ -280,16 +283,19 @@ with open(test_data_dir) as test_data, open(train_data_dir) as train_data:
             # print(test_line, train_line)
             # calculate the execution time
             dtw_start_time = time.time()
-            print('Total Distance is {0:.3f}'.format(originDTW(test_data_list, train_data_list)))
-            print('Total time is {0:.5f}'.format(time.time() - dtw_start_time))
+            #print('Total Distance is {0:.3f}'.format(originDTW(test_data_list, train_data_list)))
+            #print('Total time is {0:.5f}'.format(time.time() - dtw_start_time))
             dtw_total_time = time.time() - dtw_start_time
 
             print("---ADTW---")
             # calculate the execution time
             adtw_start_time = time.time()
-            distance = adaptiveWindowDTW(test_data_list, train_data_list)
-            print('Total Distance is {0:.3f}'.format(distance))
-            print('Total time is {0:.5f}'.format(time.time() - adtw_start_time))
+            distance = adaptiveWindowDTW(test_data_list, train_data_list, current_coparision_distance)
+            print(current_coparision_distance)
+            if distance < current_coparision_distance:
+                current_coparision_distance = distance
+            #print('Total Distance is {0:.3f}'.format(distance))
+            #print('Total time is {0:.5f}'.format(time.time() - adtw_start_time))
             adtw_total_time = time.time() - adtw_start_time
 
             if adtw_total_time < dtw_total_time:
