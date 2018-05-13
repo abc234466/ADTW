@@ -9,6 +9,8 @@ import time  # calculate the execution time
 import os  # list data of directory
 
 from heapq import *  # include heap queue data structure
+from sortedcontainers import *
+from collections import *
 
 '''
 TS = [4, 0.57094, 0.57094, 0.57094, 0.57094, 0.57094, 0.57094, 0.57094, 0.57094, 0.57094, 0.57094, 0.57094, 0.57094,
@@ -109,6 +111,7 @@ matrix_ADTW = []
 
 count = 0
 
+
 # ----- Origin DTW -----
 
 def originDTW(ts1, ts2):
@@ -130,7 +133,7 @@ def originDTW(ts1, ts2):
 # ----- MyDTW -----
 def adaptiveWindowDTW(ts1, ts2, cur_mini_distance):
     # initialization of matrix
-    global matrix_ADTW
+    # global matrix_ADTW
     matrix_ADTW = [[math.inf for i in range(len(ts1))] for i in range(len(ts2))]
 
     # two indices of time series
@@ -146,17 +149,68 @@ def adaptiveWindowDTW(ts1, ts2, cur_mini_distance):
     ts2_length = len(ts2)  # length of n
 
     # unexpanded cells queuing for expansion
-    unexpandedCellQueue = []
-
-    while True:
-        global totalUsedCells
-        count = 0
+    unexpandedCellQueue = [[math.inf, math.inf, math.inf]]
+    minimum_value = -1
+    while cur_mini_distance > minimum_value:
+        templist=[]
+        # global totalUsedCells
+        # count = 0
         # if #something happen:
-        if matrix_ADTW[ts1_length - 1][ts2_length - 1] != math.inf and matrix_ADTW[ts1_length - 1][ts2_length - 1] < \
-                unexpandedCellQueue[0][0]:
+        # diagonal direction
+        if ts1_index + 1 < ts1_length and ts2_index + 1 < ts2_length:
+            # accumulate current distance with diagonal distance
+            distance_dia = abs(ts1[ts1_index + 1] - ts2[ts2_index + 1])
+            cumulativeDia = matrix_ADTW[ts1_index][ts2_index] + distance_dia
+
+            # check whether the cell should be add into unexpandedCellQueue
+            if matrix_ADTW[ts1_index + 1][ts2_index + 1] == math.inf:
+                matrix_ADTW[ts1_index + 1][ts2_index + 1] = cumulativeDia
+                insertList = [cumulativeDia, ts1_index + 1, ts2_index + 1]
+                templist.append(insertList)
+                # heappush(unexpandedCellQueue, insertList)
+                # totalUsedCells += 1
+
+        # down direction
+        if ts1_index + 1 < ts1_length:
+            # accumulate current distance with down distance
+            distance_down = abs(ts1[ts1_index + 1] - ts2[ts2_index])
+            cumulativeDown = matrix_ADTW[ts1_index][ts2_index] + distance_down
+
+            # check whether the cell should be add into unexpandedCellQueue
+            if matrix_ADTW[ts1_index + 1][ts2_index] == math.inf:
+                matrix_ADTW[ts1_index + 1][ts2_index] = cumulativeDown
+                insertList = [cumulativeDown, ts1_index + 1, ts2_index]
+                templist.append(insertList)
+                heappush(unexpandedCellQueue, insertList)
+                # totalUsedCells += 1
+
+        # right direction
+        if ts2_index + 1 < ts2_length:
+            # accumulate current distance with right distance
+            distance_right = abs(ts1[ts1_index] - ts2[ts2_index + 1])
+            cumulativeRight = matrix_ADTW[ts1_index][ts2_index] + distance_right
+
+            # check whether the cell should be add into unexpandedCellQueue
+            if matrix_ADTW[ts1_index][ts2_index + 1] == math.inf:
+                matrix_ADTW[ts1_index][ts2_index + 1] = cumulativeRight
+                insertList = [cumulativeRight, ts1_index, ts2_index + 1]
+                heappush(unexpandedCellQueue, insertList)
+                # totalUsedCells += 1
+
+        # find the current minimum cell
+        minimum_cell = heappop(unexpandedCellQueue)
+        # replace the minimum value with new heappop value
+        minimum_value = minimum_cell[0]
+        # replace the ts1_index & ts2_index with the value of current minimum_cell
+        ts1_index = minimum_cell[1]
+        ts2_index = minimum_cell[2]
+
+        # check whether surpass current allowed distance
+
+        if matrix_ADTW[ts1_length - 1][ts2_length - 1] <= minimum_value:
             '''
             count = 0
-            
+
             for i in matrix_ADTW:
                 for j in i:
                     if j != math.inf:
@@ -165,66 +219,11 @@ def adaptiveWindowDTW(ts1, ts2, cur_mini_distance):
             print("Total {0}, we use {1}, usage {2}%".format(ts1_length * ts2_length, count,
                                                              count * 100 / (ts1_length * ts2_length)))            
             '''
-            # print(matrix_ADTW)
             return matrix_ADTW[ts1_length - 1][ts2_length - 1]
-        else:
-
-            # diagonal direction
-            if ts1_index + 1 < ts1_length and ts2_index + 1 < ts2_length:
-                # accumulate current distance with diagonal distance
-                distance_dia = abs(ts1[ts1_index + 1] - ts2[ts2_index + 1])
-                cumulativeDia = matrix_ADTW[ts1_index][ts2_index] + distance_dia
-
-                # check whether the cell should be add into unexpandedCellQueue
-                if matrix_ADTW[ts1_index + 1][ts2_index + 1] == math.inf:
-                    matrix_ADTW[ts1_index + 1][ts2_index + 1] = cumulativeDia
-                    insertList = [cumulativeDia, ts1_index + 1, ts2_index + 1]
-                    heappush(unexpandedCellQueue, insertList)
-                    #totalUsedCells += 1
-
-            # down direction
-            if ts1_index + 1 < ts1_length:
-                # accumulate current distance with down distance
-                distance_down = abs(ts1[ts1_index + 1] - ts2[ts2_index])
-                cumulativeDown = matrix_ADTW[ts1_index][ts2_index] + distance_down
-
-                # check whether the cell should be add into unexpandedCellQueue
-                if matrix_ADTW[ts1_index + 1][ts2_index] == math.inf:
-                    matrix_ADTW[ts1_index + 1][ts2_index] = cumulativeDown
-                    insertList = [cumulativeDown, ts1_index + 1, ts2_index]
-                    heappush(unexpandedCellQueue, insertList)
-                    #totalUsedCells += 1
-
-            # right direction
-            if ts2_index + 1 < ts2_length:
-                # accumulate current distance with right distance
-                distance_right = abs(ts1[ts1_index] - ts2[ts2_index + 1])
-                cumulativeRight = matrix_ADTW[ts1_index][ts2_index] + distance_right
-
-                # check whether the cell should be add into unexpandedCellQueue
-                if matrix_ADTW[ts1_index][ts2_index + 1] == math.inf:
-                    matrix_ADTW[ts1_index][ts2_index + 1] = cumulativeRight
-                    insertList = [cumulativeRight, ts1_index, ts2_index + 1]
-                    heappush(unexpandedCellQueue, insertList)
-                    #totalUsedCells += 1
 
             # worst case -> fill all cells
-            if len(unexpandedCellQueue) == 1:
-                return unexpandedCellQueue[0][0]
-
-            # find the current minimum cell
-            minimum_cell = heappop(unexpandedCellQueue)
-
-            # check whether surpass current allowed distance
-            if cur_mini_distance < minimum_cell[0]:
-                break
-
-            # if matrix_ADTW[minimum_cell[1]][minimum_cell[2]] != math.inf and matrix_ADTW[minimum_cell[1]][minimum_cell[2]] > minimum_cell[0]:
-            #     count +=1
-
-            # replace the ts1_index & ts2_index with the value of current minimum_cell
-            ts1_index = minimum_cell[1]
-            ts2_index = minimum_cell[2]
+            # if len(unexpandedCellQueue) == 1:
+            # return matrix_ADTW[ts1_length - 1][ts2_length - 1]
 
 
 '''
@@ -233,12 +232,12 @@ def adaptiveWindowDTW(ts1, ts2, cur_mini_distance):
 main program
 
 
-
 '''
 
-pre_dir = 'UCR_TS_Archive_2015'
+pre_dir = 'UCR_TS_Archive_2015_2'
+# pre_dir = 'TEST'
 
-# experiment all data
+### experiment all data
 for file in os.listdir(pre_dir):
     print('Dataset {} begins.'.format(file))
     # read TEST & TRAIN data set
@@ -255,10 +254,11 @@ for file in os.listdir(pre_dir):
         matched_point = 0
         unmatched_point = 0
 
-        #totalUsedCells = 0
+        # totalUsedCells = 0
 
-        # process the train data
+        # initial the train data list -> preprocess the train data
         processed_train_data = []
+
         while True:
             # read whole line data -> transform into data we want
             train_data_one_line = train_data.readline().split(',')
@@ -267,11 +267,11 @@ for file in os.listdir(pre_dir):
                 break
             else:
                 processed_train_data.append(train_data_one_line)
-        # print(len(processed_train_data))
 
         # store the total experiment
         totalExperiment = 0
 
+        # i = 0
         ### test data while loop
         while True:
 
@@ -290,8 +290,8 @@ for file in os.listdir(pre_dir):
             # end of data
             if test_data_one_line == ['']:
                 # print('Matched number is {0}, and unmatched number is {1}.'.format(matched_point, unmatched_point))
-                # print('Total time of DTW and ADTW is {0:.3f} {1:.3f}'.format(all_dtw_total_time, all_adtw_total_time))
-                print('Total time of ADTW of {0} is {1:.3f}'.format(file, all_adtw_total_time))
+                print('Total time of DTW is {0:.3f} '.format(all_dtw_total_time))
+                # print('Total time of ADTW of {0} is {1:.3f}'.format(file, all_adtw_total_time))
                 # print('Accuracy is {0:.3f}%.'.format(matched_point * 100 / (matched_point + unmatched_point)))
                 # totalUsedCells += totalExperiment
                 # totalCells = len(train_data_list) * len(train_data_list) * totalExperiment
@@ -334,10 +334,9 @@ for file in os.listdir(pre_dir):
                     '1, 2, 3, 4, 5' split(',') -> ['1', '2', '3', '4', '5']
                 '''
 
-
                 # end of current test data -> begin next test data
                 if train_data_index == len(processed_train_data):
-
+                    # i += 1
                     # print the information of compared time series
                     # print("The most similar class is {0}".format(train_label))
                     #
@@ -351,26 +350,32 @@ for file in os.listdir(pre_dir):
                     # print("DTW wins {0}, ADTW wins {1}".format(dtwpoint, adtwpoint))
                     break
                 else:
+
+                    # accumulate the total experiments round
                     totalExperiment += 1
-                    # print('Train DataSet {0}''s {1} '.format(file, i))
+
+                    # print('Train DataSet TEST : {0}, TRAIN : {1} '.format(i, train_data_index))
                     # split_train_data_one_line = train_data_one_line
+
                     # store the test
                     train_data_this_line = processed_train_data[train_data_index]
+
                     '''
+                        process the data :
                         ['1', '2', '3', '4', '5'] -> [1, 2, 3, 4, 5]
                     '''
                     train_data_list = []
                     for value in train_data_this_line[1:]:
                         train_data_list.append(float(value))
-                    # print(processed_train_data)
+
                     # print("---Origin DTW---")
 
                     # calculate the execution time
-                    # dtw_start_time = time.time()
-                    # dtw_distance = originDTW(test_data_list, train_data_list)
-                    # dtw_total_time = time.time() - dtw_start_time
-                    #
-                    # all_dtw_total_time += dtw_total_time
+                    dtw_start_time = time.time()
+                    dtw_distance = originDTW(test_data_list, train_data_list)
+                    dtw_total_time = time.time() - dtw_start_time
+
+                    all_dtw_total_time += dtw_total_time
 
                     # print('Total Distance of DTW is {0:.3f}'.format(dtw_distance))
                     # print('Total time is {0:.5f}'.format(dtw_total_time))
@@ -378,39 +383,40 @@ for file in os.listdir(pre_dir):
                     # print("---ADTW---")
                     # calculate the execution time
 
-                    # beginning of ADTW
-                    adtw_start_time = time.time()
-
-                    '''
-                    function adaptiveWindowDTW(A, B, C) ->
-                    A : current test data <list>
-                    B : current train data <list>
-                    C : current allowed maximum distance
-                    '''
-                    adtw_distance = adaptiveWindowDTW(test_data_list, train_data_list, current_comparision_distance)
-                    adtw_total_time = time.time() - adtw_start_time
-                    # end of ADTW
-
-                    all_adtw_total_time += adtw_total_time
-
-                    # adtw_distance != None -> We arrive at the cell matrix_ADTW[m][n]
-                    if adtw_distance != None:
-
-                        # update the current allowed maximum distance
-                        if adtw_distance < current_comparision_distance:
-                            current_comparision_distance = adtw_distance
-
-                        # 1 nearest neighbor (1NN) -> determine the most similar class
-                        if adtw_distance < current_minimum_distance:
-                            # if we find another smaller value -> update adtw_distance
-                            current_minimum_distance = adtw_distance
-                            train_label = train_data_this_line[0]
-                        #print('Total Distance of ADTW is {0:.3f}'.format(adtw_distance))
-
-                    # adtw_distance == None -> We can't find the better answer, so we just move on to next training data and compare it.
-                    else:
-                        pass
-                        # print('We do not need to complete this round.')
+                    # # beginning of ADTW
+                    # adtw_start_time = time.time()
+                    #
+                    # '''
+                    # function adaptiveWindowDTW(A, B, C) ->
+                    # A : current test data <list>
+                    # B : current train data <list>
+                    # C : current allowed maximum distance
+                    # '''
+                    # adtw_distance = adaptiveWindowDTW(test_data_list, train_data_list, current_comparision_distance)
+                    # adtw_total_time = time.time() - adtw_start_time
+                    # # end of ADTW
+                    #
+                    # # total ADTW execution time
+                    # all_adtw_total_time += adtw_total_time
+                    #
+                    # # adtw_distance != None -> We arrive at the cell matrix_ADTW[m][n]
+                    # if adtw_distance != None:
+                    #
+                    #     # update the current allowed maximum distance
+                    #     if adtw_distance < current_comparision_distance:
+                    #         current_comparision_distance = adtw_distance
+                    #
+                    #     # 1 nearest neighbor (1NN) -> determine the most similar class
+                    #     if adtw_distance < current_minimum_distance:
+                    #         # if we find another smaller value -> update adtw_distance
+                    #         current_minimum_distance = adtw_distance
+                    #         train_label = train_data_this_line[0]
+                    #         # print('Total Distance of ADTW is {0:.3f}'.format(adtw_distance))
+                    #
+                    # # adtw_distance == None -> We can't find the better answer, so we just move on to next training data and compare it.
+                    # else:
+                    #     pass
+                    #     # print('We do not need to complete this round.')
 
                         # #print(test_label, train_label)
                         # # show the ADTW total time
@@ -426,10 +432,10 @@ for file in os.listdir(pre_dir):
 
                 # calculate the total used cells
 
-                for i in matrix_ADTW:
-                    for j in i:
-                        if j != math.inf:
-                            count += 1
+                # for i in matrix_ADTW:
+                #     for j in i:
+                #         if j != math.inf:
+                #             count += 1
 
                 # next train data
                 train_data_index += 1
