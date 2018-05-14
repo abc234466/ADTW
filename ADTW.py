@@ -7,6 +7,7 @@ import numpy as np  # including matrix
 import math  # including inf
 import time  # calculate the execution time
 import os  # list data of directory
+import random # use random choice
 
 from heapq import *  # include heap queue data structure
 from sortedcontainers import *
@@ -234,7 +235,7 @@ main program
 
 '''
 
-pre_dir = 'UCR_TS_Archive_2015_2'
+pre_dir = 'UCR_TS_Archive_2015'
 # pre_dir = 'TEST'
 
 ### experiment all data
@@ -290,8 +291,8 @@ for file in os.listdir(pre_dir):
             # end of data
             if test_data_one_line == ['']:
                 # print('Matched number is {0}, and unmatched number is {1}.'.format(matched_point, unmatched_point))
-                print('Total time of DTW is {0:.3f} '.format(all_dtw_total_time))
-                # print('Total time of ADTW of {0} is {1:.3f}'.format(file, all_adtw_total_time))
+                # print('Total time of DTW is {0:.3f} '.format(all_dtw_total_time))
+                print('Total time of ADTW of {0} is {1:.3f}'.format(file, all_adtw_total_time))
                 # print('Accuracy is {0:.3f}%.'.format(matched_point * 100 / (matched_point + unmatched_point)))
                 # totalUsedCells += totalExperiment
                 # totalCells = len(train_data_list) * len(train_data_list) * totalExperiment
@@ -325,6 +326,9 @@ for file in os.listdir(pre_dir):
 
                 train_data_index = 0
 
+                # store the backup processed train data
+                processed_train_data_backup = processed_train_data[:]
+
             ### train data while loop
             while True:
 
@@ -333,9 +337,8 @@ for file in os.listdir(pre_dir):
                 e.g. 
                     '1, 2, 3, 4, 5' split(',') -> ['1', '2', '3', '4', '5']
                 '''
-
                 # end of current test data -> begin next test data
-                if train_data_index == len(processed_train_data):
+                if len(processed_train_data_backup) == 0:
                     # i += 1
                     # print the information of compared time series
                     # print("The most similar class is {0}".format(train_label))
@@ -352,14 +355,14 @@ for file in os.listdir(pre_dir):
                 else:
 
                     # accumulate the total experiments round
-                    totalExperiment += 1
+                    # totalExperiment += 1
 
                     # print('Train DataSet TEST : {0}, TRAIN : {1} '.format(i, train_data_index))
                     # split_train_data_one_line = train_data_one_line
 
-                    # store the test
-                    train_data_this_line = processed_train_data[train_data_index]
-
+                    # random choice the train data -> speed up the execution
+                    train_data_this_line = random.choice(processed_train_data_backup)
+                    processed_train_data_backup.remove(train_data_this_line)
                     '''
                         process the data :
                         ['1', '2', '3', '4', '5'] -> [1, 2, 3, 4, 5]
@@ -368,14 +371,15 @@ for file in os.listdir(pre_dir):
                     for value in train_data_this_line[1:]:
                         train_data_list.append(float(value))
 
+                    # print(train_data_list, end='')
                     # print("---Origin DTW---")
 
                     # calculate the execution time
-                    dtw_start_time = time.time()
-                    dtw_distance = originDTW(test_data_list, train_data_list)
-                    dtw_total_time = time.time() - dtw_start_time
-
-                    all_dtw_total_time += dtw_total_time
+                    # dtw_start_time = time.time()
+                    # dtw_distance = originDTW(test_data_list, train_data_list)
+                    # dtw_total_time = time.time() - dtw_start_time
+                    #
+                    # all_dtw_total_time += dtw_total_time
 
                     # print('Total Distance of DTW is {0:.3f}'.format(dtw_distance))
                     # print('Total time is {0:.5f}'.format(dtw_total_time))
@@ -383,40 +387,40 @@ for file in os.listdir(pre_dir):
                     # print("---ADTW---")
                     # calculate the execution time
 
-                    # # beginning of ADTW
-                    # adtw_start_time = time.time()
-                    #
-                    # '''
-                    # function adaptiveWindowDTW(A, B, C) ->
-                    # A : current test data <list>
-                    # B : current train data <list>
-                    # C : current allowed maximum distance
-                    # '''
-                    # adtw_distance = adaptiveWindowDTW(test_data_list, train_data_list, current_comparision_distance)
-                    # adtw_total_time = time.time() - adtw_start_time
-                    # # end of ADTW
-                    #
-                    # # total ADTW execution time
-                    # all_adtw_total_time += adtw_total_time
-                    #
-                    # # adtw_distance != None -> We arrive at the cell matrix_ADTW[m][n]
-                    # if adtw_distance != None:
-                    #
-                    #     # update the current allowed maximum distance
-                    #     if adtw_distance < current_comparision_distance:
-                    #         current_comparision_distance = adtw_distance
-                    #
-                    #     # 1 nearest neighbor (1NN) -> determine the most similar class
-                    #     if adtw_distance < current_minimum_distance:
-                    #         # if we find another smaller value -> update adtw_distance
-                    #         current_minimum_distance = adtw_distance
-                    #         train_label = train_data_this_line[0]
-                    #         # print('Total Distance of ADTW is {0:.3f}'.format(adtw_distance))
-                    #
-                    # # adtw_distance == None -> We can't find the better answer, so we just move on to next training data and compare it.
-                    # else:
-                    #     pass
-                    #     # print('We do not need to complete this round.')
+                    # beginning of ADTW
+                    adtw_start_time = time.time()
+
+                    '''
+                    function adaptiveWindowDTW(A, B, C) ->
+                    A : current test data <list>
+                    B : current train data <list>
+                    C : current allowed maximum distance
+                    '''
+                    adtw_distance = adaptiveWindowDTW(test_data_list, train_data_list, current_comparision_distance)
+                    adtw_total_time = time.time() - adtw_start_time
+                    # end of ADTW
+
+                    # total ADTW execution time
+                    all_adtw_total_time += adtw_total_time
+
+                    # adtw_distance != None -> We arrive at the cell matrix_ADTW[m][n]
+                    if adtw_distance != None:
+
+                        # update the current allowed maximum distance
+                        if adtw_distance < current_comparision_distance:
+                            current_comparision_distance = adtw_distance
+
+                        # 1 nearest neighbor (1NN) -> determine the most similar class
+                        if adtw_distance < current_minimum_distance:
+                            # if we find another smaller value -> update adtw_distance
+                            current_minimum_distance = adtw_distance
+                            train_label = train_data_this_line[0]
+                            # print('Total Distance of ADTW is {0:.3f}'.format(adtw_distance))
+
+                    # adtw_distance == None -> We can't find the better answer, so we just move on to next training data and compare it.
+                    else:
+                        pass
+                        # print('We do not need to complete this round.')
 
                         # #print(test_label, train_label)
                         # # show the ADTW total time
@@ -438,8 +442,6 @@ for file in os.listdir(pre_dir):
                 #             count += 1
 
                 # next train data
-                train_data_index += 1
-
 '''
 # Original Dynamic Time Warping
 print("---OriginDTW---")
