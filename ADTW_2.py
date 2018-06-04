@@ -106,9 +106,6 @@ Trim_ComparedTS = ComparedTS[1:]
 # global matrix_ADTW matrix
 matrix_ADTW = []
 
-# global totalSet
-totalIndexSet = set()
-
 # usage of cells
 
 count = 0
@@ -134,10 +131,9 @@ def originDTW(ts1, ts2):
 
 # ----- MyDTW -----
 def adaptiveWindowDTW(ts1, ts2, cur_mini_distance):
-
-    # global Set
-    global totalIndexSet
-
+    # initialization of matrix
+    # global matrix_ADTW
+    totalIndexSet = set()
     lookupdict = dict()
     # two indices of time series
     ts1_index = 0
@@ -158,40 +154,37 @@ def adaptiveWindowDTW(ts1, ts2, cur_mini_distance):
         # global totalUsedCells
         # count = 0
 
-        ### diagonal direction
+        # diagonal direction
         # accumulate current distance with diagonal distance
         distance_dia = abs(ts1[ts1_index + 1] - ts2[ts2_index + 1])
         cumulativeDia = cur_minimum_value + distance_dia
 
         # check whether the cell should be add into unexpandedCellQueue
         if (ts1_index + 1, ts2_index + 1) not in totalIndexSet:
-            # Insert unexpanded cells into Set
             totalIndexSet.add((ts1_index + 1, ts2_index + 1))
             heappush(unexpandedCellQueue, [cumulativeDia, ts1_index + 1, ts2_index + 1])
             lookupdict[(ts1_index + 1, ts2_index + 1)] = cumulativeDia
             # totalUsedCells += 1
 
-        ### down direction
+        # down direction
         # accumulate current distance with down distance
         distance_down = abs(ts1[ts1_index + 1] - ts2[ts2_index])
         cumulativeDown = cur_minimum_value + distance_down
 
         # check whether the cell should be add into unexpandedCellQueue
         if (ts1_index + 1, ts2_index) not in totalIndexSet:
-            # Insert unexpanded cells into Set
             totalIndexSet.add((ts1_index + 1, ts2_index))
             heappush(unexpandedCellQueue, [cumulativeDown, ts1_index + 1, ts2_index])
             lookupdict[(ts1_index + 1, ts2_index)] = cumulativeDown
             # totalUsedCells += 1
 
-        ### right direction
+        # right direction
         # accumulate current distance with right distance
         distance_right = abs(ts1[ts1_index] - ts2[ts2_index + 1])
         cumulativeRight = cur_minimum_value + distance_right
 
         # check whether the cell should be add into unexpandedCellQueue
         if (ts1_index, ts2_index + 1) not in totalIndexSet:
-            # Insert unexpanded cells into Set
             totalIndexSet.add((ts1_index, ts2_index + 1))
             heappush(unexpandedCellQueue, [cumulativeRight, ts1_index, ts2_index + 1])
             lookupdict[(ts1_index, ts2_index + 1)] = cumulativeRight
@@ -217,8 +210,8 @@ main program
 
 '''
 
-# pre_dir = 'TEMP'
-pre_dir = 'TEST'
+pre_dir = 'TEMP'
+# pre_dir = 'TEST'
 
 ### experiment all data
 for file in os.listdir(pre_dir):
@@ -265,13 +258,22 @@ for file in os.listdir(pre_dir):
             '''
 
             test_data_one_line = test_data.readline().split(',')
+            # print(test_data_one_line)
+            # print(test_data_one_line)
+            # store the total experimental rounds
+
 
             # end of data
             if test_data_one_line == ['']:
                 # print('Matched number is {0}, and unmatched number is {1}.'.format(matched_point, unmatched_point))
                 # print('Total time of DTW is {0:.2f} '.format(all_dtw_total_time))
                 print('Total time of ADTW of {0} is {1:.1f}'.format(file, all_adtw_total_time))
-                print('Total Used cells are {}'.format(len(totalIndexSet)))
+                # print('Accuracy is {0:.3f}%.'.format(matched_point * 100 / (matched_point + unmatched_point)))
+                # totalUsedCells += totalExperiment
+                # totalCells = len(train_data_list) * len(train_data_list) * totalExperiment
+                # print("Total {0}, we use {1}, usage {2}%".format(totalCells, totalUsedCells,
+                #                                                  totalUsedCells * 100 / (
+                #                                                      totalCells)))
                 print('---End of Test---')
                 break
             else:

@@ -1,12 +1,13 @@
 .idea/
 
+
 UCR_TS_Archive_2015/
 UCR_TS_Archive_2015_2/
 UCR_TS_Archive_2015_backup/
-
 TEST/
+TEMP/*
+short_UCR/
 PostponedData/
+pure_UCR_DATA/*
 
-ADTW*
-
-ADTW_2
+ADTW_SVM.py
