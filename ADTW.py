@@ -137,6 +137,7 @@ def adaptiveWindowDTW(ts1, ts2, cur_mini_distance):
 
     # global Set
     global totalIndexSet
+    totalIndexSet = set()
 
     lookupdict = dict()
     # two indices of time series
@@ -254,6 +255,7 @@ for file in os.listdir(pre_dir):
         # store the total experiment
         totalExperiment = 0
 
+        totalusedcells = 0
         # i = 0
         ### test data while loop
         while True:
@@ -271,7 +273,7 @@ for file in os.listdir(pre_dir):
                 # print('Matched number is {0}, and unmatched number is {1}.'.format(matched_point, unmatched_point))
                 # print('Total time of DTW is {0:.2f} '.format(all_dtw_total_time))
                 print('Total time of ADTW of {0} is {1:.1f}'.format(file, all_adtw_total_time))
-                print('Total Used cells are {}'.format(len(totalIndexSet)))
+                print('Total Used cells are {}'.format(totalusedcells))
                 print('---End of Test---')
                 break
             else:
@@ -301,6 +303,8 @@ for file in os.listdir(pre_dir):
 
                 # store the backup processed train data
                 processed_train_data_backup = processed_train_data[:]
+
+
 
             ### train data while loop
             while True:
@@ -385,6 +389,8 @@ for file in os.listdir(pre_dir):
                     # total ADTW execution time
                     all_adtw_total_time += adtw_total_time
 
+                    # total cells
+                    totalusedcells += len(totalIndexSet)
                     # adtw_distance != None -> We arrive at the cell matrix_ADTW[m][n]
                     if adtw_distance != None:
 
