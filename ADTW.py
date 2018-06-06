@@ -1,7 +1,3 @@
-'''
-First comment
-'''
-
 # import method
 import numpy as np  # including matrix
 import math  # including inf
@@ -107,7 +103,6 @@ Trim_ComparedTS = ComparedTS[1:]
 matrix_ADTW = []
 
 # global totalSet
-totalIndexSet = set()
 
 # usage of cells
 
@@ -134,7 +129,6 @@ def originDTW(ts1, ts2):
 
 # ----- MyDTW -----
 def adaptiveWindowDTW(ts1, ts2, cur_mini_distance):
-
     # global Set
     global totalIndexSet
     totalIndexSet = set()
@@ -155,6 +149,7 @@ def adaptiveWindowDTW(ts1, ts2, cur_mini_distance):
     # unexpanded cells queuing for expansion
     unexpandedCellQueue = [[math.inf, math.inf, math.inf]]
 
+    # check whether exceed current allowed distance
     while cur_mini_distance > cur_minimum_value:
         # global totalUsedCells
         # count = 0
@@ -200,7 +195,7 @@ def adaptiveWindowDTW(ts1, ts2, cur_mini_distance):
 
         # check whether arrive at final point
         if (ts1_length - 2, ts2_length - 2) in totalIndexSet:
-            return lookupdict.get((ts1_length-2, ts2_length-2))
+            return lookupdict.get((ts1_length - 2, ts2_length - 2))
 
         # find the current minimum cell
         minimum_cell = heappop(unexpandedCellQueue)
@@ -210,20 +205,25 @@ def adaptiveWindowDTW(ts1, ts2, cur_mini_distance):
         # replace the ts1_index & ts2_index with the value of current minimum_cell
         ts1_index = minimum_cell[1]
         ts2_index = minimum_cell[2]
-'''
 
 
-main program
-
-
-'''
+#
+#
+#
+# main program
+#
+#
+#
 
 # pre_dir = 'TEMP'
 pre_dir = 'TEST'
 
 ### experiment all data
 for file in os.listdir(pre_dir):
+
+    # print the current file info
     print('Dataset {} begins.'.format(file))
+
     # read TEST & TRAIN data set
     test_data_dir = pre_dir + '/' + file + '/' + file + '_TEST'
     train_data_dir = pre_dir + '/' + file + '/' + file + '_TRAIN'
@@ -234,11 +234,10 @@ for file in os.listdir(pre_dir):
         # two variables -> total time for DTW & ADTW
         all_dtw_total_time = 0
         all_adtw_total_time = 0
+
         # set up the matched & unmatched points
         matched_point = 0
         unmatched_point = 0
-
-        # totalUsedCells = 0
 
         # initial the train data list -> preprocess the train data
         processed_train_data = []
@@ -255,16 +254,17 @@ for file in os.listdir(pre_dir):
         # store the total experiment
         totalExperiment = 0
 
+        # calculate the total used cells
         totalusedcells = 0
         # i = 0
         ### test data while loop
         while True:
 
-            '''
-            initialization -> read one line test data -> adjust the data < string to list >
-            e.g. 
-                '1, 2, 3, 4, 5' split(',') -> ['1', '2', '3', '4', '5'] -> [1, 2, 3, 4, 5]
-            '''
+            #
+            # initialization -> read one line test data -> adjust the data < string to list >
+            # e.g.
+            #     '1, 2, 3, 4, 5' split(',') -> ['1', '2', '3', '4', '5'] -> [1, 2, 3, 4, 5]
+            #
 
             test_data_one_line = test_data.readline().split(',')
 
@@ -304,16 +304,9 @@ for file in os.listdir(pre_dir):
                 # store the backup processed train data
                 processed_train_data_backup = processed_train_data[:]
 
-
-
             ### train data while loop
             while True:
 
-                '''
-                initialization -> read one line test data -> adjust the data < string to list >
-                e.g. 
-                    '1, 2, 3, 4, 5' split(',') -> ['1', '2', '3', '4', '5']
-                '''
                 # end of current test data -> begin next test data
                 if len(processed_train_data_backup) == 0:
                     # i += 1
@@ -340,16 +333,17 @@ for file in os.listdir(pre_dir):
                     # random choice the train data -> speed up the execution
                     train_data_this_line = random.choice(processed_train_data_backup)
                     processed_train_data_backup.remove(train_data_this_line)
-                    '''
-                        process the data :
-                        ['1', '2', '3', '4', '5'] -> [1, 2, 3, 4, 5]
-                    '''
+
+                    #
+                    #     process the data :
+                    #     ['1', '2', '3', '4', '5'] -> [1, 2, 3, 4, 5]
+                    #
+
                     train_data_list = []
                     for value in train_data_this_line[1:]:
                         train_data_list.append(float(value))
 
-                    # print(train_data_list, end='')
-                    # print("---Origin DTW---")
+                    ### print("---Origin DTW---")
 
                     # calculate the execution time
                     # dtw_start_time = time.time()
@@ -366,14 +360,13 @@ for file in os.listdir(pre_dir):
 
 
 
-                    # append math.inf and -math.inf to ts1 and ts2
+                    # append math.inf and -math.inf to ts1 and ts2 instead of initializing matrix_adtw
                     ts1 = test_data_list[:]
                     ts2 = train_data_list[:]
                     ts1.append(math.inf)
                     ts2.append(-math.inf)
 
-
-                    # # beginning of ADTW
+                    ### beginning of ADTW
                     adtw_start_time = time.time()
 
                     '''
@@ -410,24 +403,9 @@ for file in os.listdir(pre_dir):
                         pass
                         # print('We do not need to complete this round.')
 
-                        # #print(test_label, train_label)
-                        # # show the ADTW total time
-                        # #print('Total time is {0:.5f}'.format(adtw_total_time))
-                        #
-                        # if adtw_total_time < dtw_total_time:
-                        #     #print(i)
-                        #     adtwpoint += 1
-                        # else:
-                        #     dtwpoint += 1
-
                         # print('------------------------------------')
 
                         # calculate the total used cells
-
-                        # for i in matrix_ADTW:
-                        #     for j in i:
-                        #         if j != math.inf:
-                        #             count += 1
 
                         # next train data
 '''
